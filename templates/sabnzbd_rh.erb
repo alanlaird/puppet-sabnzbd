@@ -1,0 +1,19 @@
+# File created by Puppet. Do not modify by hand.
+#
+# This file is sourced by /etc/init.d/sabnzbdplus
+#
+# When SABnzbd+ is started using the init script, the
+# --daemon option is always used, and the program is
+# started under the account of $USER, as set below.
+#
+sabuser=<%= @user %>
+
+config=<%= @config_path %>
+apikey=<%= @api_key %>
+protocol=http
+host=<%= @host %>
+port=<%= @port %>
+
+<% if @extraopts -%>
+EXTRAOPTS=<%= extraopts %>
+<% end -%>

@@ -6,9 +6,8 @@ class sabnzbd::params {
 
   # These settings allow sabnzbd to start
   $user        = 'sabnzbd'
-  $config_path = '/home/sabnzbd/sabnzbd.ini'
   $host        = '0.0.0.0'
-  $port        = '8180'
+  $port        = '8080'
 
   # General configuration settings
   $enable_https = '0'
@@ -21,4 +20,23 @@ class sabnzbd::params {
   # Login settings for sabnzbd frontend, blank means no login
   $login_username     = ''
   $login_password     = ''
+
+  case $::osfamily {
+    'Debian': {
+      $package    = [ 'sabnzbdplus', 'sabnzbdplus-theme-mobile', 'sabnzbdplus-theme-smpl' ]
+      $service	  = 'sabnzbdplus'
+      $service_config = '/etc/default/sabnzbdplus'
+    }
+    'RedHat': {
+      $package    = [ 'SABnzbd' ]
+      $service    = 'SABnzd'
+      $config_path = '/home/sabnzbd/sabnzbd.ini'
+      $service_config = '/etc/sysconfig/SABnzbd'
+    }
+    default: {
+      fail("osfamily not supported: ${::osfamily}")
+    }
+  }
+
 }
+

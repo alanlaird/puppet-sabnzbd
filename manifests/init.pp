@@ -71,6 +71,29 @@
 #
 # Andrew Harley <morphizer@gmail.com>
 #
+  $servers = {
+    myprovider => { 'server_url'  => 'news.provider1.com',
+                    'port'        => '119',
+                    'connections' => '10',
+    },
+    backup => { 'server_url'  => 'news.provider2.com',
+                'port'        => '119',
+                'connections' => '5',
+                'backup_server' => '1',
+     }
+  }
+
+  $categories = {
+    tv     => { 'directory' => 'TV' },
+    movies => { 'directory' => '/opt/share/movies' },
+  }
+
+  class { 'sabnzbd':
+    servers  => $servers,
+    categories => $categories,
+  }
+
+
 class sabnzbd (
   $user           = $::sabnzbd::params::user,
   $config_path    = $::sabnzbd::params::config_path,
@@ -88,35 +111,63 @@ class sabnzbd (
   $servers        = {},
   $categories     = {}
 ) inherits sabnzbd::params {
+ 
 
-  # make it run apt-get update first
-  exec { "apt-update":
-    command => "/usr/bin/apt-get update"
+  case $::osfamily {
+	'Redhat': { 
+	  package { 'rpmforge-release':
+          	provider => 'rpm',
+          	ensure => installed,
+          	source => 'http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm',
+        	}
+	  yumrepo { 'sabnzbd':
+          	name => 'SABnzbd',
+          	descr => 'SABnzbd for RHEL 6 and clones - $basearch - Base',
+          	baseurl => 'http://fedora-sabnzbd.dyndns.org/SABnzbd/RHEL-CentOS/6/',
+          	failovermethod => 'priority',
+          	enabled => 1,
+          	gpgcheck => 0,
+		}
+	  service { $::sabnzbd::param::service:
+	  	enable => true,
+	  	}
+	  file { $::sabnzbd::params::service_config:
+    		ensure  => file,
+    		require => $::sabnzbd::param::package,
+    		content => template('sabnzbd/sabnzbd_rh.erb'),
+    		notify  => $::sabnzbd::param::service
+  		}
+
+        }
+	'Debian': {
+	  file { $::sabnzbd::params::service_config:
+    		ensure  => file,
+    		require => $::sabnzbd::param::package,
+    		content => template('sabnzbd/sabnzbdplus.erb'),
+    		notify  => $::sabnzbd::param::service
+  		} 
+	#  Exec["apt-update"] -> Package <| |>
+	# make it run apt-get update first
+  	  exec { "apt-update":
+    		command => "/usr/bin/apt-get update"
+  		}	
+ 
+ 	}
   }
-  
-  Exec["apt-update"] -> Package <| |>
 
   # on ubuntu it's available in official repositories since jaunty
   # though it's an old version. Will add the custom ppa soon.
-  package { 'sabnzbdplus':
+  package { $sabnzbd::params::package:
     ensure  => installed,
   }
 
-  package { 'sabnzbdplus-theme-mobile':
-    ensure  => installed,
-    require => Package['sabnzbdplus'],
-  }
-
-  package { 'sabnzbdplus-theme-smpl':
-    ensure  => installed,
-    require => Package['sabnzbdplus'],
-  }
 
   # We also require the unrar program
   $unrar = $::operatingsystem ? {
     'Debian' => 'unrar-free',
     default  => 'unrar',
   }
+
   package { $unrar: ensure => installed }
 
   user { $::sabnzbd::params::user:
@@ -124,29 +175,22 @@ class sabnzbd (
     comment    => 'SABnzbd user, created by Puppet',
     system     => true,
     managehome => true,
-    require    => Package['sabnzbdplus'],
-  }
-
-  file { '/etc/default/sabnzbdplus':
-    ensure  => file,
-    require => Package['sabnzbdplus'],
-    content => template('sabnzbd/sabnzbdplus.erb'),
-    notify  => Service['sabnzbdplus'],
+    require    => $::sabnzbd::param::package
   }
 
   file { $config_path:
     ensure  => file,
-    require => Package['sabnzbdplus'],
+    require => $::sabnzbd::param::package,
     content => template('sabnzbd/sabnzbd.ini.erb'),
-    notify  => Service['sabnzbdplus'],
+    notify  => $::sabnzbd::param::service,
     owner   => $user,
     group   => $user
   }
 
-  service { 'sabnzbdplus':
+  service { $::sabnzbd::params::service:
     ensure     => running,
     enable     => true,
     hasrestart => true,
-    require    => Package['sabnzbdplus'],
+    require    => $::sabnzbd::param::package
   }
 }
