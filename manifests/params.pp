@@ -29,7 +29,7 @@ class sabnzbd::params {
     }
     'RedHat': {
       $package    = [ 'SABnzbd' ]
-      $service    = 'SABnzd'
+      $service    = 'SABnzbd'
       $config_path = '/home/sabnzbd/sabnzbd.ini'
       $service_config = '/etc/sysconfig/SABnzbd'
     }

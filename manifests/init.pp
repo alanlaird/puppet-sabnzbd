@@ -120,6 +120,9 @@ class sabnzbd (
           	ensure => installed,
           	source => 'http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm',
         	}
+	  package { 'unrar':
+	  	ensure => installed,
+		}
 	  yumrepo { 'sabnzbd':
           	name => 'SABnzbd',
           	descr => 'SABnzbd for RHEL 6 and clones - $basearch - Base',
@@ -128,47 +131,54 @@ class sabnzbd (
           	enabled => 1,
           	gpgcheck => 0,
 		}
-	  service { $::sabnzbd::param::service:
-	  	enable => true,
-	  	}
+  	  package { $sabnzbd::params::package:
+    		ensure  => installed,
+    		require => Package[ 'unrar', 'rpmforge-release'],
+  		}
 	  file { $::sabnzbd::params::service_config:
     		ensure  => file,
     		require => $::sabnzbd::param::package,
     		content => template('sabnzbd/sabnzbd_rh.erb'),
     		notify  => $::sabnzbd::param::service
+  		}  
+	  service { $::sabnzbd::params::service:
+    		enable     => true,
+    		hasrestart => true,
+    		require    => Package['SABnzbd']
   		}
-
         }
-	'Debian': {
+	'Debian': {	
+	#  Exec["apt-update"] -> Package <| |>
+	# make it run apt-get update first
+  	  exec { "apt-update":
+    		command => "/usr/bin/apt-get update"
+  		}	
+
+	  package { 'unrar-free':
+		ensure => installed,
+		}
+  	  package { $sabnzbd::params::package:
+    		ensure  => installed,
+    		require => Package[ 'unrar-free'],
+  		}
 	  file { $::sabnzbd::params::service_config:
     		ensure  => file,
     		require => $::sabnzbd::param::package,
     		content => template('sabnzbd/sabnzbdplus.erb'),
     		notify  => $::sabnzbd::param::service
   		} 
-	#  Exec["apt-update"] -> Package <| |>
-	# make it run apt-get update first
-  	  exec { "apt-update":
-    		command => "/usr/bin/apt-get update"
-  		}	
+	  service { $::sabnzbd::params::service:
+    		enable     => true,
+    		hasrestart => true,
+    		ensure     => running,
+    		require    => Package['SABnzbd']
+  		}
  
  	}
   }
 
   # on ubuntu it's available in official repositories since jaunty
   # though it's an old version. Will add the custom ppa soon.
-  package { $sabnzbd::params::package:
-    ensure  => installed,
-  }
-
-
-  # We also require the unrar program
-  $unrar = $::operatingsystem ? {
-    'Debian' => 'unrar-free',
-    default  => 'unrar',
-  }
-
-  package { $unrar: ensure => installed }
 
   user { $::sabnzbd::params::user:
     ensure     => present,
@@ -187,10 +197,4 @@ class sabnzbd (
     group   => $user
   }
 
-  service { $::sabnzbd::params::service:
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    require    => $::sabnzbd::param::package
-  }
 }
