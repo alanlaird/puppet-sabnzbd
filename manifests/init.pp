@@ -71,28 +71,6 @@
 #
 # Andrew Harley <morphizer@gmail.com>
 #
-  $servers = {
-    myprovider => { 'server_url'  => 'news.provider1.com',
-                    'port'        => '119',
-                    'connections' => '10',
-    },
-    backup => { 'server_url'  => 'news.provider2.com',
-                'port'        => '119',
-                'connections' => '5',
-                'backup_server' => '1',
-     }
-  }
-
-  $categories = {
-    tv     => { 'directory' => 'TV' },
-    movies => { 'directory' => '/opt/share/movies' },
-  }
-
-  class { 'sabnzbd':
-    servers  => $servers,
-    categories => $categories,
-  }
-
 
 class sabnzbd (
   $user           = $::sabnzbd::params::user,
