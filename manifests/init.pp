@@ -93,25 +93,28 @@ class sabnzbd (
 
   case $::osfamily {
 	'Redhat': { 
-	  package { 'rpmforge-release':
-          	provider => 'rpm',
-          	ensure => installed,
-          	source => 'http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm',
-        	}
+#	  package { 'rpmforge-release':
+#          	provider => 'rpm',
+#          	ensure => installed,
+#          	source => 'http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm',
+#        	}
 	  package { 'unrar':
 	  	ensure => installed,
 		}
+	  package { 'epel':
+	  	ensure => installed,
+    }
 	  yumrepo { 'sabnzbd':
           	name => 'SABnzbd',
-          	descr => 'SABnzbd for RHEL 6 and clones - $basearch - Base',
-          	baseurl => 'http://fedora-sabnzbd.dyndns.org/SABnzbd/RHEL-CentOS/6/',
+          	descr => 'SABnzbd for RHEL $::operatingsystemmajrelease and clones - $basearch - Base',
+          	baseurl => 'https://dl.dropboxusercontent.com/u/14500830/SABnzbd/RHEL-CentOS/SABnzbd-$::operatingsystemmajrelease.repo',
           	failovermethod => 'priority',
           	enabled => 1,
           	gpgcheck => 0,
 		}
   	  package { $sabnzbd::params::package:
     		ensure  => installed,
-    		require => Package[ 'unrar', 'rpmforge-release'],
+    		require => Package[ 'unrar', 'epel'],
   		}
 	  file { $::sabnzbd::params::service_config:
     		ensure  => file,
