@@ -107,7 +107,7 @@ class sabnzbd (
 	  yumrepo { 'sabnzbd':
           	name => 'SABnzbd',
           	descr => 'SABnzbd for RHEL $::operatingsystemmajrelease and clones - $basearch - Base',
-          	baseurl => 'https://dl.dropboxusercontent.com/u/14500830/SABnzbd/RHEL-CentOS/SABnzbd-$::operatingsystemmajrelease.repo',
+          	baseurl => 'https://dl.dropboxusercontent.com/u/14500830/SABnzbd/RHEL-CentOS/$::operatingsystemmajrelease',
           	failovermethod => 'priority',
           	enabled => 1,
           	gpgcheck => 0,
