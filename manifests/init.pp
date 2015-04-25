@@ -93,11 +93,11 @@ class sabnzbd (
 
   case $::osfamily {
 	'Redhat': { 
-#	  package { 'rpmforge-release':
-#          	provider => 'rpm',
-#          	ensure => installed,
-#          	source => 'http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm',
-#        	}
+	  package { 'rpmforge-release':
+          	provider => 'rpm',
+          	ensure => installed,
+          	source => 'http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm',
+        	}
 	  package { 'unrar':
 	  	ensure => installed,
 		}
@@ -107,7 +107,7 @@ class sabnzbd (
 	  yumrepo { 'sabnzbd':
           	name => 'SABnzbd',
           	descr => 'SABnzbd for RHEL $::operatingsystemmajrelease and clones - $basearch - Base',
-          	baseurl => 'https://dl.dropboxusercontent.com/u/14500830/SABnzbd/RHEL-CentOS/$::operatingsystemmajrelease',
+          	baseurl => "https://dl.dropboxusercontent.com/u/14500830/SABnzbd/RHEL-CentOS/${::operatingsystemmajrelease}",
           	failovermethod => 'priority',
           	enabled => 1,
           	gpgcheck => 0,
