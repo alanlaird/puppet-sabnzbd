@@ -114,7 +114,7 @@ class sabnzbd (
 		}
   	  package { $sabnzbd::params::package:
     		ensure  => installed,
-    		require => Package[ 'unrar', 'epel'],
+    		require => Package[ 'unrar', 'epel-release'],
   		}
 	  file { $::sabnzbd::params::service_config:
     		ensure  => file,
