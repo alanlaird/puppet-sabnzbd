@@ -101,7 +101,7 @@ class sabnzbd (
 	  package { 'unrar':
 	  	ensure => installed,
 		}
-	  package { 'epel':
+	  package { 'epel-release':
 	  	ensure => installed,
     }
 	  yumrepo { 'sabnzbd':
